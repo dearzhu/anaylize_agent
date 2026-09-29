@@ -22,7 +22,7 @@
 - 财报指标+异常（纯本地）：`scripts/demo_financial.py`
 - 二期编排：`scripts/demo_orchestrator.py`
 - 三期闭环+报告：`scripts/demo_multiagent.py`
-- RAG 问答（需 Ollama 已启动并拉取 bge-m3/qwen2.5:7b/qwen2.5-vl:7b）：`scripts/demo_rag.py`
+- RAG 问答（需 Ollama 已启动并拉取 bge-m3/qwen2.5:7b/qwen2.5vl:7b）：`scripts/demo_rag.py`
 
 **语法检查**：`.venv/Scripts/python.exe -m py_compile <files>`
 

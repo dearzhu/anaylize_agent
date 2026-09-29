@@ -5,7 +5,7 @@ ollama:
   llm_model: "qwen2.5:7b"          # 通用编排/对话（按显存选 7b/32b/72b）
   reasoning_model: "deepseek-r1:32b"  # 深度推理/归因
   embed_model: "bge-m3"            # 向量化（中文金融语料优选 bge-m3）
-  vlm_model: "qwen2.5-vl:7b"       # 财报图片直读
+  vlm_model: "qwen2.5vl:7b"       # 财报图片直读
   temperature: 0.1
   num_ctx: 8192
 

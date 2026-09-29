@@ -44,12 +44,12 @@ class HybridRetriever:
         tokenized = [_tokenize(c) for c in corpus]
         if corpus and any(tokenized):
             bm25 = BM25Okapi(tokenized)
-            bm25_scores = bm25.get_scores(_tokenize(query))
+            bm25_scores = bm25.get_scores(_tokenize(query)).tolist()
         else:
             bm25_scores = [0.0] * len(candidates)
 
         # 3) 分数归一化融合
-        max_b = max(bm25_scores) if bm25_scores else 1.0
+        max_b = max(bm25_scores) if len(bm25_scores) else 1.0
         for c, s in zip(candidates, bm25_scores):
             vec = c.get("score", 0.0)
             c["hybrid_score"] = 0.7 * vec + 0.3 * (s / max_b if max_b else 0.0)

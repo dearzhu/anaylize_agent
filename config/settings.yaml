@@ -1,0 +1,95 @@
+# 金融数据分析智能体 — 全局配置（一期）
+
+ollama:
+  base_url: "http://localhost:11434"
+  llm_model: "qwen2.5:7b"          # 通用编排/对话（按显存选 7b/32b/72b）
+  reasoning_model: "deepseek-r1:32b"  # 深度推理/归因
+  embed_model: "bge-m3"            # 向量化（中文金融语料优选 bge-m3）
+  vlm_model: "qwen2.5-vl:7b"       # 财报图片直读
+  temperature: 0.1
+  num_ctx: 8192
+
+vectorstore:
+  type: "chroma"                   # chroma | pgvector
+  persist_dir: "./data/vectordb"
+  collection: "finance_kb"
+  distance: "cosine"
+  # pgvector 连接（type=pgvector 时生效）
+  pg_dsn: "postgresql://user:pass@localhost:5432/finance"
+
+rag:
+  chunk_size: 800
+  chunk_overlap: 120
+  top_k: 6
+  rerank_top_n: 4
+
+ocr:
+  engine: "rapidocr"               # rapidocr | paddle | mock
+  dpi: 200
+  use_vlm_fallback: true
+
+financial:
+  anomaly_yoy_threshold: 0.30      # 同比变动超 30% 触发预警
+  cash_profit_ratio_min: 0.70      # 经营现金流/净利润 低于 0.7 提示盈利质量风险
+
+# ===== 多智能体编排（二期框架 / 三期协作闭环） =====
+orchestrator:
+  default_agents:
+    - financial_agent
+    - rag_agent
+    - flow_agent
+    - risk_agent
+    - strategy_agent
+  parallel: false                  # 当前为依赖有序串行；置 true 可并行独立 Agent
+  auto_inject_deps: true           # 将前置 Agent 输出注入后续 Agent 上下文
+  human_review_agents:
+    - risk_agent
+    - strategy_agent
+  low_confidence_threshold: 0.5
+
+flow:
+  large_txn_multiplier: 3.0        # 单笔金额 > 均值*该倍数 视为大额异常
+  top_n_counterparties: 5
+  data_path: "./data/sample_transactions/transactions.csv"
+
+risk:
+  current_ratio_warn: 1.0          # 流动比率低于该值预警
+  current_ratio_risk: 0.5          # 低于该值高危
+  asset_liab_warn: 0.70            # 资产负债率高于该值预警
+  asset_liab_risk: 0.85            # 高于该值高危
+  roe_warn: 0.05                   # ROE 低于该值预警
+
+strategy:
+  risk_free_rate: 0.02
+  momentum_window: 20
+  data_path: "./data/sample_prices/prices.csv"
+
+# ===== 三期：报告自动生成 + 可视化 =====
+report:
+  output_dir: "./data/reports"
+  fig_dir: "./data/reports/figures"
+
+# ===== 二期：编排层与流水/风控/策略 Agent =====
+orchestrator:
+  default_agents: [financial_agent, rag_agent, flow_agent, risk_agent, strategy_agent]
+  parallel: true
+  auto_inject_deps: true            # 按 depends_on 自动注入上游 Agent
+  human_review_agents: [risk_agent, strategy_agent]  # 涉及风险/交易建议需人工复核
+  low_confidence_threshold: 0.5
+
+flow:
+  large_txn_multiplier: 3.0         # 金额 > 中位数 * 该倍数 视为异常大额
+  top_n_counterparties: 5
+  data_path: "./data/sample_transactions/transactions.csv"
+
+risk:
+  current_ratio_warn: 1.0           # 流动比率 < 预警线 -> 中风险
+  current_ratio_risk: 0.5           # 流动比率 < 风险线 -> 高风险
+  asset_liab_warn: 0.70             # 资产负债率 > 预警线 -> 中风险
+  asset_liab_risk: 0.85             # 资产负债率 > 风险线 -> 极高风险
+  roe_warn: 0.05                    # ROE < 该值 -> 盈利能力偏弱预警
+
+strategy:
+  risk_free_rate: 0.02              # 年化无风险利率（夏普计算）
+  momentum_window: 20               # 动量因子窗口（交易日）
+  data_path: "./data/sample_prices/prices.csv"

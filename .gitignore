@@ -1,0 +1,20 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated reports / figures
+data/reports/
+
+# IDE / tooling internal data
+.codebuddy/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

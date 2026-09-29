@@ -1,0 +1,11 @@
+{
+  "source": "data/sample_financials/_smoke.png",
+  "segments": [
+    "8396.000C0 00*5000C 0"
+  ],
+  "tables": [],
+  "metadata": {
+    "engine": "rapidocr",
+    "tables": 0
+  }
+}

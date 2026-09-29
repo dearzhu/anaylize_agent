@@ -1,0 +1,57 @@
+{
+  "company": "示例科技股份有限公司",
+  "period": "2023",
+  "currency": "CNY",
+  "statements": {
+    "balance_sheet": {
+      "total_assets": 1200000,
+      "current_assets": 700000,
+      "inventory": 180000,
+      "accounts_receivable": 160000,
+      "total_liabilities": 480000,
+      "current_liabilities": 300000,
+      "total_equity": 720000
+    },
+    "income_statement": {
+      "revenue": 950000,
+      "cost_of_goods_sold": 600000,
+      "gross_profit": 350000,
+      "operating_profit": 180000,
+      "ebit": 200000,
+      "interest_expense": 20000,
+      "net_profit": 150000
+    },
+    "cash_flow": {
+      "operating_cash_flow": 90000,
+      "net_cash_flow": 70000
+    }
+  },
+  "prior": {
+    "company": "示例科技股份有限公司",
+    "period": "2022",
+    "statements": {
+      "balance_sheet": {
+        "total_assets": 1000000,
+        "current_assets": 600000,
+        "inventory": 120000,
+        "accounts_receivable": 90000,
+        "total_liabilities": 400000,
+        "current_liabilities": 250000,
+        "total_equity": 600000
+      },
+      "income_statement": {
+        "revenue": 800000,
+        "cost_of_goods_sold": 500000,
+        "gross_profit": 300000,
+        "operating_profit": 150000,
+        "ebit": 170000,
+        "interest_expense": 20000,
+        "net_profit": 120000
+      },
+      "cash_flow": {
+        "operating_cash_flow": 100000,
+        "net_cash_flow": 60000
+      }
+    }
+  }
+}

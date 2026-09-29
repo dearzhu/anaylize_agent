@@ -7,7 +7,7 @@
     3) 升级 pip 并安装 requirements.txt
     4) 可选：拉取 Ollama 模型（需本机已安装并运行 Ollama）
  .PARAMETER PullModels
-    附加此开关会自动拉取所需 Ollama 模型（bge-m3 / qwen2.5:7b / qwen2.5-vl:7b）。
+    附加此开关会自动拉取所需 Ollama 模型（bge-m3 / qwen2.5:7b / qwen2.5vl:7b）。
  .EXAMPLE
     powershell -ExecutionPolicy Bypass -File setup_env.ps1
     powershell -ExecutionPolicy Bypass -File setup_env.ps1 -PullModels
@@ -54,7 +54,7 @@ if ($PullModels) {
     if (Get-Command ollama -ErrorAction SilentlyContinue) {
         ollama pull bge-m3
         ollama pull qwen2.5:7b
-        ollama pull qwen2.5-vl:7b
+        ollama pull qwen2.5vl:7b
         Write-Host "提示：如需深度推理模型可手动执行 'ollama pull deepseek-r1:32b'" -ForegroundColor Yellow
     } else {
         Write-Warning "未检测到 ollama 命令，跳过模型拉取。请先安装并启动 Ollama：https://ollama.com/"

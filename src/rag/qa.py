@@ -25,7 +25,8 @@ def _build_context(results: List[dict]) -> Tuple[str, str]:
     for r in results:
         meta = r.get("metadata", {})
         doc_id = meta.get("doc_id", "?")
-        pos = meta.get("page_or_pos", "?")
+        # 优先用页码/位置；纯文本无页码时回退到标题路径，再缺失用「全文」
+        pos = meta.get("page_or_pos") or meta.get("heading_path") or "全文"
         blocks.append(f"[doc_id={doc_id}, 位置={pos}]\n{r['document']}")
         cites.append(f"doc_id={doc_id}, 位置={pos}")
     return "\n\n".join(blocks), "; ".join(cites)

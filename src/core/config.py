@@ -18,7 +18,7 @@ class OllamaConfig:
     llm_model: str = "qwen2.5:7b"
     reasoning_model: str = "deepseek-r1:32b"
     embed_model: str = "bge-m3"
-    vlm_model: str = "qwen2.5-vl:7b"
+    vlm_model: str = "qwen2.5vl:7b"
     temperature: float = 0.1
     num_ctx: int = 8192
 

@@ -37,7 +37,7 @@ if [ "${1:-}" = "--pull" ]; then
   if command -v ollama >/dev/null 2>&1; then
     ollama pull bge-m3
     ollama pull qwen2.5:7b
-    ollama pull qwen2.5-vl:7b
+    ollama pull qwen2.5vl:7b
     echo "提示：深度推理模型可手动执行 'ollama pull deepseek-r1:32b'"
   else
     echo "警告：未检测到 ollama，跳过模型拉取。请先安装并启动 Ollama。"

@@ -75,7 +75,7 @@ pip install -r requirements.txt
 # 启动 Ollama 并拉取模型（RAG 与 VLM 需要）
 ollama pull bge-m3          # 向量化
 ollama pull qwen2.5:7b      # 通用对话
-ollama pull qwen2.5-vl:7b   # 财报图片直读（OCR 兜底）
+ollama pull qwen2.5vl:7b   # 财报图片直读（OCR 兜底）
 # 可选：ollama pull deepseek-r1:32b  # 深度推理
 
 # OCR 引擎（默认 rapidocr，基于 ONNX、无需 Paddle；不装则自动降级为 mock）

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>金融数据分析智能体</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --accent:#38bdf8; --ok:#22c55e; --warn:#f59e0b; --txt:#e2e8f0; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC",sans-serif;
+           background:var(--bg); color:var(--txt); line-height:1.6; }
+    header { padding:24px 32px; border-bottom:1px solid #334155; }
+    header h1 { margin:0; font-size:20px; }
+    header p { margin:6px 0 0; color:#94a3b8; font-size:13px; }
+    main { max-width:960px; margin:0 auto; padding:24px 32px; }
+    .panel { background:var(--card); border-radius:12px; padding:20px; margin-bottom:20px; }
+    label { display:block; font-size:13px; color:#94a3b8; margin-bottom:6px; }
+    input[type=file], textarea { width:100%; background:#0b1220; color:var(--txt);
+           border:1px solid #334155; border-radius:8px; padding:10px; font-size:14px; }
+    textarea { min-height:70px; resize:vertical; }
+    .btns { display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; }
+    button { background:var(--accent); color:#06283d; border:0; border-radius:8px;
+             padding:10px 18px; font-size:14px; font-weight:600; cursor:pointer; }
+    button.secondary { background:#334155; color:var(--txt); }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .hint { font-size:12px; color:#64748b; margin-top:8px; }
+    #status { font-size:13px; color:var(--accent); min-height:18px; margin-top:10px; }
+    .result h3 { margin:0 0 8px; font-size:15px; color:var(--accent); }
+    .badge { display:inline-block; font-size:12px; padding:2px 8px; border-radius:6px;
+             background:#334155; color:var(--txt); margin-bottom:10px; text-transform:uppercase; }
+    .answer { white-space:pre-wrap; background:#0b1220; border-radius:8px; padding:14px; font-size:14px; }
+    .sources { font-size:12px; color:#94a3b8; margin-top:8px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
+    th,td { border:1px solid #334155; padding:6px 10px; text-align:left; }
+    th { background:#0b1220; }
+    .anom-warning { color:var(--warn); }
+    .anom-risk { color:#ef4444; }
+    .figs { display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
+    .figs img { max-width:46%; border-radius:8px; border:1px solid #334155; }
+    .err { color:#ef4444; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>金融数据分析智能体</h1>
+    <p>上传财报/文档/图片进行分析，或直接提问查询知识库。所有计算本地完成，数据不出内网。</p>
+  </header>
+
+  <main>
+    <div class="panel">
+      <label for="file">① 上传文件（可选）：财报 JSON / 图片 / txt / md</label>
+      <input type="file" id="file" />
+      <label for="query" style="margin-top:14px;">② 你的问题（不上传文件则走知识库查询；可留空仅分析文件）</label>
+      <textarea id="query" placeholder="例如：评估这家公司是否可纳入投资组合？"></textarea>
+      <div class="btns">
+        <button id="btnAnalyze">分析 / 查询</button>
+        <button id="btnReport" class="secondary">生成完整报告</button>
+      </div>
+      <div class="hint">提示：带文件 = 分析文件；不带文件 = 知识库查询。报告模式会跑多智能体并生成图表。</div>
+      <div id="status"></div>
+    </div>
+
+    <div class="panel result" id="result" style="display:none;">
+      <span class="badge" id="rMode"></span>
+      <h3>结论</h3>
+      <div class="answer" id="rAnswer"></div>
+      <div class="sources" id="rSources"></div>
+      <div id="rDetails"></div>
+      <div class="figs" id="rFigs"></div>
+      <div class="sources" id="rDisclaimer"></div>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const status = (t) => { $("status").textContent = t; };
+    const setBusy = (b) => { $("btnAnalyze").disabled = b; $("btnReport").disabled = b; };
+
+    function showResult(data) {
+      $("result").style.display = "block";
+      $("rMode").textContent = data.mode || (data.summary ? "report" : "result");
+      $("rAnswer").textContent = data.answer || data.summary || "";
+
+      const src = data.sources || [];
+      $("rSources").textContent = src.length ? "来源：" + src.join("；") : "";
+
+      // 明细：指标表 / 异常 / OCR 原文
+      const det = data.details || {};
+      let html = "";
+      if (det.ratios) {
+        html += "<h3>指标</h3><table><tr><th>指标</th><th>数值</th></tr>";
+        for (const [k, v] of Object.entries(det.ratios))
+          html += `<tr><td>${k}</td><td>${v === null ? "N/A" : v}</td></tr>`;
+        html += "</table>";
+      }
+      if (det.anomalies && det.anomalies.length) {
+        html += "<h3>异常 / 预警</h3><ul>";
+        for (const a of det.anomalies) {
+          const cls = a.level === "risk" ? "anom-risk" : "anom-warning";
+          html += `<li class="${cls}">[${a.level}] ${a.message}</li>`;
+        }
+        html += "</ul>";
+      }
+      if (det.extracted_text) {
+        html += "<h3>OCR 提取文本</h3><div class='answer'>" +
+                det.extracted_text.replace(/</g, "&lt;") + "</div>";
+      }
+      if (data.kb_supplement) {
+        html += "<h3>知识库补充</h3><div class='answer'>" + data.kb_supplement + "</div>";
+      }
+      if (data.report_markdown) {
+        html += "<h3>报告全文（Markdown）</h3><div class='answer'>" +
+                data.report_markdown.replace(/</g, "&lt;") + "</div>";
+      }
+      $("rDetails").innerHTML = html;
+
+      // 图表
+      const figs = data.figures || [];
+      $("rFigs").innerHTML = figs.map((u) => `<img src="${u}" alt="figure" />`).join("");
+
+      $("rDisclaimer").textContent = data.disclaimer || "";
+    }
+
+    async function analyze() {
+      setBusy(true); status("处理中…");
+      const fd = new FormData();
+      const f = $("file").files[0];
+      if (f) fd.append("file", f);
+      fd.append("query", $("query").value);
+      try {
+        const r = await fetch("/api/analyze", { method: "POST", body: fd });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.detail || "请求失败");
+        showResult(j);
+        status("");
+      } catch (e) {
+        status("错误：" + e.message);
+      } finally { setBusy(false); }
+    }
+
+    async function report() {
+      setBusy(true); status("生成报告中（多智能体 + 图表，稍候）…");
+      try {
+        const r = await fetch("/api/report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: $("query").value || "请对示例科技做一次综合分析" }),
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.detail || "请求失败");
+        showResult(j);
+        status("");
+      } catch (e) {
+        status("错误：" + e.message);
+      } finally { setBusy(false); }
+    }
+
+    $("btnAnalyze").onclick = analyze;
+    $("btnReport").onclick = report;
+  </script>
+</body>
+</html>

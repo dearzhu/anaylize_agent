@@ -49,7 +49,7 @@ class ChromaVectorStore(VectorStore):
             (res["metadatas"][0] if res["metadatas"] else []),
             (res["distances"][0] if res["distances"] else []),
         ):
-            out.append({"document": doc, "metadata": meta, "score": 1 - dist})
+            out.append({"document": doc, "metadata": meta, "score": float(1 - dist)})
         return out
 
     def count(self):
